@@ -1,34 +1,60 @@
 pipeline {
 
-agent any
+    agent any
 
-stages {
+    environment {
+        IMAGE_NAME = "zomato-clone"
+        CONTAINER_NAME = "zomato-container"
+    }
 
-stage('Clone Repository') {
-steps {
-git 'https://github.com/YOUR_USERNAME/devops-zomato-clone.git'
-}
-}
+    stages {
 
-stage('Build Docker Image') {
-steps {
-sh 'docker build -t zomato-clone .'
-}
-}
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
 
-stage('Security Scan') {
-steps {
-sh 'trivy image zomato-clone'
-}
-}
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/maliVishal01/devops-zomato-cicd-project.git'
+            }
+        }
 
-stage('Deploy Application') {
-steps {
-sh 'docker rm -f zomato || true'
-sh 'docker run -d -p 80:80 --name zomato zomato-clone'
-}
-}
+        stage('Build Docker Image') {
+            steps {
+                sh '''
+                docker build -t $IMAGE_NAME .
+                '''
+            }
+        }
 
-}
+        stage('Security Scan (Trivy)') {
+            steps {
+                sh '''
+                trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME
+                '''
+            }
+        }
 
+        stage('Deploy Container') {
+            steps {
+                sh '''
+                docker rm -f $CONTAINER_NAME || true
+                docker run -d -p 80:80 --name $CONTAINER_NAME $IMAGE_NAME
+                '''
+            }
+        }
+
+    }
+
+    post {
+        success {
+            echo 'Deployment successful!'
+        }
+
+        failure {
+            echo 'Pipeline failed!'
+        }
+    }
 }
