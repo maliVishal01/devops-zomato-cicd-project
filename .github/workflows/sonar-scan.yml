@@ -1,4 +1,4 @@
-name: SonarQube Scan
+name: SonarCloud Scan
 
 on:
   push:
@@ -6,14 +6,14 @@ on:
       - main
 
 jobs:
-  sonar-scan:
+  sonarcloud:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Source Code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
