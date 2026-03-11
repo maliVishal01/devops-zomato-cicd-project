@@ -9,13 +9,7 @@ pipeline {
 
     stages {
 
-        stage('Clean Workspace') {
-            steps {
-                cleanWs()
-            }
-        }
-
-        stage('Clone Repository') {
+        stage('Clone Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/maliVishal01/devops-zomato-cicd-project.git'
             }
@@ -23,17 +17,13 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                docker build -t $IMAGE_NAME .
-                '''
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
-        stage('Security Scan (Trivy)') {
+        stage('Security Scan') {
             steps {
-                sh '''
-                trivy image --exit-code 0 --severity HIGH,CRITICAL $IMAGE_NAME
-                '''
+                sh 'trivy image $IMAGE_NAME'
             }
         }
 
@@ -48,13 +38,4 @@ pipeline {
 
     }
 
-    post {
-        success {
-            echo 'Deployment successful!'
-        }
-
-        failure {
-            echo 'Pipeline failed!'
-        }
-    }
 }
